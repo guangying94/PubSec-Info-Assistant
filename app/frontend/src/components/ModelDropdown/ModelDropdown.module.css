@@ -1,0 +1,9 @@
+.container {
+  margin-bottom: 8px;
+  margin-top: 8px;
+}
+
+/* Hide label in subHeader context but show in settings panel */
+.container:global(.subHeaderDropdown) :global(.ms-Label) {
+  display: none;
+}

@@ -501,7 +501,7 @@ variable "chatWarningBannerText" {
 
 variable "chunkTargetSize" {
   type    = string
-  default = "750"
+  default = "1000"
 }
 
 variable "targetPages" {

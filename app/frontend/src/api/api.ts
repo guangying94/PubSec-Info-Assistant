@@ -45,7 +45,8 @@ export async function chatApi(options: ChatRequest, signal: AbortSignal): Promis
                 response_length: options.overrides?.responseLength,
                 response_temp: options.overrides?.responseTemp,
                 selected_folders: options.overrides?.selectedFolders,
-                selected_tags: options.overrides?.selectedTags
+                selected_tags: options.overrides?.selectedTags,
+                selected_model: options.overrides?.selectedModel
             },
             citation_lookup: options.citation_lookup,
             thought_chain: options.thought_chain

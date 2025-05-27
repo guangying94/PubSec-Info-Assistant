@@ -23,6 +23,9 @@ from azure.storage.blob import (
 from text import nonewlines
 from core.modelhelper import get_token_limit
 import requests
+## marcus added this
+from azure.ai.inference import ChatCompletionsClient
+from azure.core.credentials import AzureKeyCredential
 
 class ChatReadRetrieveReadApproach(Approach):
     """Approach that uses a simple retrieve-then-read implementation, using the Azure AI Search and
@@ -129,11 +132,18 @@ class ChatReadRetrieveReadApproach(Approach):
         openai.api_type = 'azure'
         openai.api_version = "2024-02-01"
         
-        self.client = AsyncAzureOpenAI(
-        azure_endpoint = openai.api_base,
-        azure_ad_token_provider=azure_ai_token_provider,
-        api_version=openai.api_version)
-               
+        # marcus make changes here
+        #self.client = AsyncAzureOpenAI(
+        #azure_endpoint = openai.api_base,
+        #azure_ad_token_provider=azure_ai_token_provider,
+        #api_version=openai.api_version)
+
+        self.client = ChatCompletionsClient(
+            endpoint = "https://xxxxx.services.ai.azure.com/models", # replace with your Azure AI Foundry endpoint
+            credential = AzureKeyCredential("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx") # replace with your Azure AI Foundry key
+        )
+
+        ####
 
         self.model_name = model_name
         self.model_version = model_version
@@ -181,13 +191,23 @@ class ChatReadRetrieveReadApproach(Approach):
             )
 
         try:
-            chat_completion= await self.client.chat.completions.create(
-                    model=self.chatgpt_deployment,
-                    messages=messages,
-                    temperature=0.0,
+            ### marcus make changes here
+            #chat_completion= await self.client.chat.completions.create(
+            #        model=self.chatgpt_deployment,
+            #        messages=messages,
+            #        temperature=0.0,
                     # max_tokens=32, # setting it too low may cause malformed JSON
-                    max_tokens=100,
-                n=1)
+            #        max_tokens=100,
+            #    n=1)
+
+            chat_completion = self.client.complete(
+                messages=messages,
+                temperature=0.0,
+                model = overrides.get("selected_model", ""),
+                max_tokens=100,
+            )
+            #####
+
                 # Initialize a list to collect filter reasons
             filter_reasons = []
 
@@ -383,13 +403,19 @@ class ChatReadRetrieveReadApproach(Approach):
                 max_tokens=self.chatgpt_token_limit
             )
             # Generate the chat completion
-            chat_completion= await self.client.chat.completions.create(
-                model=self.chatgpt_deployment,
+            ### marcus make changes here
+            #chat_completion= await self.client.chat.completions.create(
+            #    model=self.chatgpt_deployment,
+            #    messages=messages,
+            #    temperature=float(overrides.get("response_temp")) or 0.6,
+            #    n=1,
+            #    stream=True
+            #)
+            chat_completion = self.client.complete(
                 messages=messages,
+                model = overrides.get("selected_model", ""),
                 temperature=float(overrides.get("response_temp")) or 0.6,
-                n=1,
                 stream=True
-            
             )
             msg_to_display = '\n\n'.join([str(message) for message in messages])
         
@@ -402,7 +428,9 @@ class ChatReadRetrieveReadApproach(Approach):
                               "web_citation_lookup": {}}) + "\n"
             
             # STEP 4: Format the response
-            async for chunk in chat_completion:
+            ### marcus make changes here
+            #async for chunk in chat_completion:
+            for chunk in chat_completion:
                 # Check if there is at least one element and the first element has the key 'delta'
                 if len(chunk.choices) > 0:
                     filter_reasons = []

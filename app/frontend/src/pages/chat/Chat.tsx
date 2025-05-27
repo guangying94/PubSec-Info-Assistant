@@ -23,6 +23,7 @@ import { ClearChatButton } from "../../components/ClearChatButton";
 import { ResponseLengthButtonGroup } from "../../components/ResponseLengthButtonGroup";
 import { ResponseTempButtonGroup } from "../../components/ResponseTempButtonGroup";
 import { ChatModeButtonGroup } from "../../components/ChatModeButtonGroup";
+import { ModelDropdown } from "../../components/ModelDropdown";
 import { InfoContent } from "../../components/InfoContent/InfoContent";
 import { FolderPicker } from "../../components/FolderPicker";
 import { TagPickerInline } from "../../components/TagPicker";
@@ -45,6 +46,7 @@ const Chat = () => {
     // If you update the default value here, you must also update the default value in the onResponseTempChange method.
     const [responseTemp, setResponseTemp] = useState<number>(0.6);
 
+    const [selectedModel, setSelectedModel] = useState<string>("gpt-4o");
     const [activeChatMode, setChatMode] = useState<ChatMode>(ChatMode.WorkOnly);
     const [defaultApproach, setDefaultApproach] = useState<number>(Approaches.ReadRetrieveRead);
     const [activeApproach, setActiveApproach] = useState<number>(Approaches.ReadRetrieveRead);
@@ -114,7 +116,8 @@ const Chat = () => {
                     responseLength: responseLength,
                     responseTemp: responseTemp,
                     selectedFolders: selectedFolders.includes("selectAll") ? "All" : selectedFolders.length == 0 ? "All" : selectedFolders.join(","),
-                    selectedTags: selectedTags.map(tag => tag.name).join(",")
+                    selectedTags: selectedTags.map(tag => tag.name).join(","),
+                    selectedModel: selectedModel,
                 },
                 citation_lookup: approach == Approaches.CompareWebWithWork ? web_citation_lookup : approach == Approaches.CompareWorkWithWeb ? work_citation_lookup : {},
                 thought_chain: thought_chain
@@ -314,6 +317,10 @@ const Chat = () => {
         setSelectedTags(selectedTags)
     }
 
+    const onModelChange = (model: string) => {
+        setSelectedModel(model);
+    };
+
     useEffect(() => {
         // Hide Scrollbar for this page
         document.body.classList.add('chat-overflow-hidden-body');
@@ -502,6 +509,7 @@ const Chat = () => {
                     }
                     <TextField className={styles.chatSettingsSeparator} defaultValue={userPersona} label="User Persona" onChange={onUserPersonaChange} />
                     <TextField className={styles.chatSettingsSeparator} defaultValue={systemPersona} label="System Persona" onChange={onSystemPersonaChange} />
+                    <ModelDropdown className={styles.chatSettingsSeparator} defaultValue={selectedModel} onChange={onModelChange} />
                     <ResponseLengthButtonGroup className={styles.chatSettingsSeparator} onClick={onResponseLengthChange} defaultValue={responseLength} />
                     <ResponseTempButtonGroup className={styles.chatSettingsSeparator} onClick={onResponseTempChange} defaultValue={responseTemp} />
                     {activeChatMode != ChatMode.Ungrounded &&
